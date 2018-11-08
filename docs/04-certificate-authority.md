@@ -242,8 +242,9 @@ cfssl gencert \
 Results:
 
 ```
-kube-proxy-key.pem
-kube-proxy.pem
+$ training0@provisioner:~$ ls -alh kube-proxy*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:40 kube-proxys-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:40 kube-proxys.pem
 ```
 
 ### The Scheduler Client Certificate
@@ -251,8 +252,6 @@ kube-proxy.pem
 Generate the `kube-scheduler` client certificate and private key:
 
 ```
-{
-
 cat > kube-scheduler-csr.json <<EOF
 {
   "CN": "system:kube-scheduler",
@@ -271,22 +270,23 @@ cat > kube-scheduler-csr.json <<EOF
   ]
 }
 EOF
+```
 
+```
 cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
   -profile=kubernetes \
   kube-scheduler-csr.json | cfssljson -bare kube-scheduler
-
-}
 ```
 
 Results:
 
 ```
-kube-scheduler-key.pem
-kube-scheduler.pem
+$ training0@provisioner:~$ ls -alh kube-scheduler*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:42 kube-scheduler-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:42 kube-scheduler.pem
 ```
 
 
@@ -297,12 +297,18 @@ The `kubernetes-the-hard-way` static IP address will be included in the list of 
 Generate the Kubernetes API Server certificate and private key:
 
 ```
-{
-
 KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-the-hard-way \
   --region $(gcloud config get-value compute/region) \
   --format 'value(address)')
+```
 
+> output
+```
+training0@provisioner:~$ echo $KUBERNETES_PUBLIC_ADDRESS
+35.198.149.45
+```
+
+```
 cat > kubernetes-csr.json <<EOF
 {
   "CN": "kubernetes",
@@ -321,7 +327,9 @@ cat > kubernetes-csr.json <<EOF
   ]
 }
 EOF
+```
 
+```
 cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
@@ -329,15 +337,14 @@ cfssl gencert \
   -hostname=10.32.0.1,10.240.0.10,10.240.0.11,10.240.0.12,${KUBERNETES_PUBLIC_ADDRESS},127.0.0.1,kubernetes.default \
   -profile=kubernetes \
   kubernetes-csr.json | cfssljson -bare kubernetes
-
-}
 ```
 
 Results:
 
 ```
-kubernetes-key.pem
-kubernetes.pem
+$ training0@provisioner:~$ ls -alh kubernetes*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:45 kubernetes-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:45 kubernetes.pem
 ```
 
 ## The Service Account Key Pair
@@ -347,8 +354,6 @@ The Kubernetes Controller Manager leverages a key pair to generate and sign serv
 Generate the `service-account` certificate and private key:
 
 ```
-{
-
 cat > service-account-csr.json <<EOF
 {
   "CN": "service-accounts",
@@ -367,24 +372,47 @@ cat > service-account-csr.json <<EOF
   ]
 }
 EOF
+```
 
+```
 cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
   -profile=kubernetes \
   service-account-csr.json | cfssljson -bare service-account
-
-}
 ```
 
 Results:
 
 ```
-service-account-key.pem
-service-account.pem
+$ training0@provisioner:~$ ls -alh service-account*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:47 service-account-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:47 service-account.pem
 ```
 
+## Validate
+
+You should have 20 pem's
+
+```
+training0@provisioner:~$ ls *.pem | wc -l
+20
+```
+
+and 11 json's
+
+```
+training0@provisioner:~$ ls *.json | wc -l
+11
+```
+
+and at least 10 csr's
+
+```
+training0@provisioner:~$ ls *.csr | wc -l
+10
+```
 
 ## Distribute the Client and Server Certificates
 
