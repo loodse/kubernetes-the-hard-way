@@ -9,9 +9,7 @@ In this section you will provision a Certificate Authority that can be used to g
 Generate the CA configuration file, certificate, and private key:
 
 ```
-{
-
-cat > ca-config.json <<EOF
+$ cat > ca-config.json <<EOF
 {
   "signing": {
     "default": {
@@ -26,8 +24,10 @@ cat > ca-config.json <<EOF
   }
 }
 EOF
+```
 
-cat > ca-csr.json <<EOF
+```
+$ cat > ca-csr.json <<EOF
 {
   "CN": "Kubernetes",
   "key": {
@@ -36,26 +36,29 @@ cat > ca-csr.json <<EOF
   },
   "names": [
     {
-      "C": "US",
-      "L": "Portland",
-      "O": "Kubernetes",
-      "OU": "CA",
-      "ST": "Oregon"
+      "C": "DE",
+      "L": "Niedersachsen",
+      "O": "system:masters",
+      "OU": "Kubernetes The Hard Way",
+      "ST": "Guetersloh"
     }
   ]
 }
 EOF
+```
 
-cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+Generate the certificates
 
-}
+```
+$ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 ```
 
 Results:
 
 ```
-ca-key.pem
-ca.pem
+$ training0@provisioner:~$ ls -alh *.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:29 ca-key.pem
+-rw-rw-r-- 1 training0 training0 1.4K Nov  8 15:29 ca.pem
 ```
 
 ## Client and Server Certificates
@@ -67,9 +70,7 @@ In this section you will generate client and server certificates for each Kubern
 Generate the `admin` client certificate and private key:
 
 ```
-{
-
-cat > admin-csr.json <<EOF
+$ cat > admin-csr.json <<EOF
 {
   "CN": "admin",
   "key": {
@@ -78,31 +79,32 @@ cat > admin-csr.json <<EOF
   },
   "names": [
     {
-      "C": "US",
-      "L": "Portland",
+      "C": "DE",
+      "L": "Niedersachsen",
       "O": "system:masters",
       "OU": "Kubernetes The Hard Way",
-      "ST": "Oregon"
+      "ST": "Guetersloh"
     }
   ]
 }
 EOF
+```
 
-cfssl gencert \
+```
+$ cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
   -profile=kubernetes \
   admin-csr.json | cfssljson -bare admin
-
-}
 ```
 
 Results:
 
 ```
-admin-key.pem
-admin.pem
+$ training0@provisioner:~$ ls -alh admin*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:30 admin-key.pem
+-rw-rw-r-- 1 training0 training0 1.4K Nov  8 15:30 admin.pem
 ```
 
 ### The Kubelet Client Certificates
@@ -122,11 +124,11 @@ cat > ${instance}-csr.json <<EOF
   },
   "names": [
     {
-      "C": "US",
-      "L": "Portland",
-      "O": "system:nodes",
+      "C": "DE",
+      "L": "Niedersachsen",
+      "O": "system:masters",
       "OU": "Kubernetes The Hard Way",
-      "ST": "Oregon"
+      "ST": "Guetersloh"
     }
   ]
 }
@@ -151,12 +153,13 @@ done
 Results:
 
 ```
-worker-0-key.pem
-worker-0.pem
-worker-1-key.pem
-worker-1.pem
-worker-2-key.pem
-worker-2.pem
+$ training0@provisioner:~$ ls -alh worker*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:34 worker-0-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:34 worker-0.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:34 worker-1-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:34 worker-1.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:34 worker-2-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:34 worker-2.pem
 ```
 
 ### The Controller Manager Client Certificate
@@ -164,8 +167,6 @@ worker-2.pem
 Generate the `kube-controller-manager` client certificate and private key:
 
 ```
-{
-
 cat > kube-controller-manager-csr.json <<EOF
 {
   "CN": "system:kube-controller-manager",
@@ -184,22 +185,23 @@ cat > kube-controller-manager-csr.json <<EOF
   ]
 }
 EOF
+```
 
+```
 cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
   -profile=kubernetes \
   kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager
-
-}
 ```
 
 Results:
 
 ```
-kube-controller-manager-key.pem
-kube-controller-manager.pem
+$ training0@provisioner:~$ ls -alh kube-controller-manager*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:37 kube-controller-manager-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:37 kube-controller-manager.pem
 ```
 
 
@@ -208,8 +210,6 @@ kube-controller-manager.pem
 Generate the `kube-proxy` client certificate and private key:
 
 ```
-{
-
 cat > kube-proxy-csr.json <<EOF
 {
   "CN": "system:kube-proxy",
@@ -228,15 +228,15 @@ cat > kube-proxy-csr.json <<EOF
   ]
 }
 EOF
+```
 
+```
 cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
   -profile=kubernetes \
-  kube-proxy-csr.json | cfssljson -bare kube-proxy
-
-}
+  kube-proxy-csr.json | cfssljson -bare kube-proxys
 ```
 
 Results:

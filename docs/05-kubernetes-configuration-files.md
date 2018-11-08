@@ -18,6 +18,14 @@ KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-the-har
   --format 'value(address)')
 ```
 
+Validate if everything is working fine with `echo $KUBERNETES_PUBLIC_ADDRESS`
+
+> output
+```
+training0@provisioner:~$ echo $KUBERNETES_PUBLIC_ADDRESS
+35.198.149.45
+```
+
 ### The kubelet Kubernetes Configuration File
 
 When generating kubeconfig files for Kubelets the client certificate matching the Kubelet's node name must be used. This will ensure Kubelets are properly authorized by the Kubernetes [Node Authorizer](https://kubernetes.io/docs/admin/authorization/node/).

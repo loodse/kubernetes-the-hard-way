@@ -63,9 +63,9 @@ gcloud compute firewall-rules list --filter="network:kubernetes-the-hard-way"
 > output
 
 ```
-NAME                                    NETWORK                  DIRECTION  PRIORITY  ALLOW                 DENY
-kubernetes-the-hard-way-allow-external  kubernetes-the-hard-way  INGRESS    1000      tcp:22,tcp:6443,icmp
-kubernetes-the-hard-way-allow-internal  kubernetes-the-hard-way  INGRESS    1000      tcp,udp,icmp
+NAME                                    NETWORK                  DIRECTION  PRIORITY  ALLOW                 DENY  DISABLED
+kubernetes-the-hard-way-allow-external  kubernetes-the-hard-way  INGRESS    1000      tcp:22,tcp:6443,icmp        False
+kubernetes-the-hard-way-allow-internal  kubernetes-the-hard-way  INGRESS    1000      tcp,udp,icmp                False
 ```
 
 ### Kubernetes Public IP Address
@@ -86,8 +86,8 @@ gcloud compute addresses list --filter="name=('kubernetes-the-hard-way')"
 > output
 
 ```
-NAME                     REGION    ADDRESS        STATUS
-kubernetes-the-hard-way  us-west1  XX.XXX.XXX.XX  RESERVED
+NAME                     REGION        ADDRESS          STATUS
+kubernetes-the-hard-way  europe-west3  xxx.xxx.xxx.xxx  RESERVED
 ```
 
 ## Compute Instances
@@ -106,7 +106,7 @@ for i in 0 1 2; do
     --can-ip-forward \
     --image-family ubuntu-1804-lts \
     --image-project ubuntu-os-cloud \
-    --machine-type n1-standard-1 \
+    --machine-type n1-standard-2 \
     --private-network-ip 10.240.0.1${i} \
     --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring \
     --subnet kubernetes \
@@ -124,13 +124,16 @@ Create three compute instances which will host the Kubernetes worker nodes:
 
 ```
 for i in 0 1 2; do
-  gcloud compute instances create worker-${i} \
+  gcloud beta compute instances create worker-${i} \
     --async \
     --boot-disk-size 200GB \
     --can-ip-forward \
     --image-family ubuntu-1804-lts \
     --image-project ubuntu-os-cloud \
-    --machine-type n1-standard-1 \
+    --no-restart-on-failure \
+    --maintenance-policy=TERMINATE \
+    --preemptible \
+    --machine-type n1-standard-4 \
     --metadata pod-cidr=10.200.${i}.0/24 \
     --private-network-ip 10.240.0.2${i} \
     --scopes compute-rw,storage-ro,service-management,service-control,logging-write,monitoring \
@@ -150,13 +153,14 @@ gcloud compute instances list
 > output
 
 ```
-NAME          ZONE        MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP     STATUS
-controller-0  us-west1-c  n1-standard-1               10.240.0.10  XX.XXX.XXX.XXX  RUNNING
-controller-1  us-west1-c  n1-standard-1               10.240.0.11  XX.XXX.X.XX     RUNNING
-controller-2  us-west1-c  n1-standard-1               10.240.0.12  XX.XXX.XXX.XX   RUNNING
-worker-0      us-west1-c  n1-standard-1               10.240.0.20  XXX.XXX.XXX.XX  RUNNING
-worker-1      us-west1-c  n1-standard-1               10.240.0.21  XX.XXX.XX.XXX   RUNNING
-worker-2      us-west1-c  n1-standard-1               10.240.0.22  XXX.XXX.XX.XX   RUNNING
+NAME          ZONE            MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP     STATUS
+controller-0  europe-west3-c  n1-standard-2               10.240.0.10  35.198.164.65   RUNNING
+controller-1  europe-west3-c  n1-standard-2               10.240.0.11  35.242.206.19   RUNNING
+controller-2  europe-west3-c  n1-standard-2               10.240.0.12  35.198.190.186  RUNNING
+provisioner   europe-west3-c  n1-standard-1               10.156.0.2   35.242.250.77   RUNNING
+worker-0      europe-west3-c  n1-standard-4  true         10.240.0.20  35.198.106.250  RUNNING
+worker-1      europe-west3-c  n1-standard-4  true         10.240.0.21  35.198.169.223  RUNNING
+worker-2      europe-west3-c  n1-standard-4  true         10.240.0.22  35.198.165.206  RUNNING
 ```
 
 ## Configuring SSH Access
@@ -208,11 +212,25 @@ Waiting for SSH key to propagate.
 After the SSH keys have been updated you'll be logged into the `controller-0` instance:
 
 ```
-Welcome to Ubuntu 18.04 LTS (GNU/Linux 4.15.0-1006-gcp x86_64)
+Welcome to Ubuntu 18.04.1 LTS (GNU/Linux 4.15.0-1023-gcp x86_64)
 
-...
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
 
-Last login: Sun May 13 14:34:27 2018 from XX.XXX.XXX.XX
+  System information as of Thu Nov  8 15:19:03 UTC 2018
+
+  System load:  0.08               Processes:           95
+  Usage of /:   0.6% of 193.66GB   Users logged in:     0
+  Memory usage: 3%                 IP address for ens4: 10.240.0.10
+  Swap usage:   0%
+
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+0 packages can be updated.
+0 updates are security updates.
 ```
 
 Type `exit` at the prompt to exit the `controller-0` compute instance:
