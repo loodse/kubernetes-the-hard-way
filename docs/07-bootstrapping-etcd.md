@@ -53,7 +53,7 @@ training0@controller-0:~$ which etcd
 The instance internal IP address will be used to serve client requests and communicate with etcd cluster peers. Retrieve the internal IP address for the current compute instance:
 
 ```
-INTERNAL_IP=$(curl -s -H "Metadata-Flavor: Google" \
+$ INTERNAL_IP=$(curl -s -H "Metadata-Flavor: Google" \
   http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip)
 ```
 
@@ -66,7 +66,7 @@ $ training0@controller-0:~$ echo $INTERNAL_IP
 Each etcd member must have a unique name within an etcd cluster. Set the etcd name to match the hostname of the current compute instance:
 
 ```
-ETCD_NAME=$(hostname -s)
+$ ETCD_NAME=$(hostname -s)
 ```
 
 > output
@@ -159,7 +159,7 @@ WantedBy=multi-user.target
 List the etcd cluster members from one of those controller machines after you setup all 3:
 
 ```
-sudo ETCDCTL_API=3 etcdctl member list \
+$ sudo ETCDCTL_API=3 etcdctl member list \
   --endpoints=https://127.0.0.1:2379 \
   --cacert=/etc/etcd/ca.pem \
   --cert=/etc/etcd/kubernetes.pem \
