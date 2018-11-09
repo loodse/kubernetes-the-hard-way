@@ -58,9 +58,10 @@ done
 Results:
 
 ```
-worker-0.kubeconfig
-worker-1.kubeconfig
-worker-2.kubeconfig
+training0@provisioner:~$ ls -alh worker-*.kubeconfig
+-rw------- 1 training0 training0 6.3K Nov  9 10:10 worker-0.kubeconfig
+-rw------- 1 training0 training0 6.3K Nov  9 10:10 worker-1.kubeconfig
+-rw------- 1 training0 training0 6.3K Nov  9 10:10 worker-2.kubeconfig
 ```
 
 ### The kube-proxy Kubernetes Configuration File
@@ -68,32 +69,36 @@ worker-2.kubeconfig
 Generate a kubeconfig file for the `kube-proxy` service:
 
 ```
-{
   kubectl config set-cluster kubernetes-the-hard-way \
     --certificate-authority=ca.pem \
     --embed-certs=true \
     --server=https://${KUBERNETES_PUBLIC_ADDRESS}:6443 \
     --kubeconfig=kube-proxy.kubeconfig
+```
 
+```
   kubectl config set-credentials system:kube-proxy \
     --client-certificate=kube-proxy.pem \
     --client-key=kube-proxy-key.pem \
     --embed-certs=true \
     --kubeconfig=kube-proxy.kubeconfig
+```
 
+```
   kubectl config set-context default \
     --cluster=kubernetes-the-hard-way \
     --user=system:kube-proxy \
     --kubeconfig=kube-proxy.kubeconfig
-
+```
+```
   kubectl config use-context default --kubeconfig=kube-proxy.kubeconfig
-}
 ```
 
 Results:
 
 ```
-kube-proxy.kubeconfig
+training0@provisioner:~$ ls -alh kube-proxy.kubeconfig 
+-rw------- 1 training0 training0 2.1K Nov  9 10:17 kube-proxy.kubeconfig
 ```
 
 ### The kube-controller-manager Kubernetes Configuration File
@@ -101,32 +106,36 @@ kube-proxy.kubeconfig
 Generate a kubeconfig file for the `kube-controller-manager` service:
 
 ```
-{
   kubectl config set-cluster kubernetes-the-hard-way \
     --certificate-authority=ca.pem \
     --embed-certs=true \
     --server=https://127.0.0.1:6443 \
     --kubeconfig=kube-controller-manager.kubeconfig
+```
 
+```
   kubectl config set-credentials system:kube-controller-manager \
     --client-certificate=kube-controller-manager.pem \
     --client-key=kube-controller-manager-key.pem \
     --embed-certs=true \
     --kubeconfig=kube-controller-manager.kubeconfig
+```
 
+```
   kubectl config set-context default \
     --cluster=kubernetes-the-hard-way \
     --user=system:kube-controller-manager \
     --kubeconfig=kube-controller-manager.kubeconfig
-
+```
+```
   kubectl config use-context default --kubeconfig=kube-controller-manager.kubeconfig
-}
 ```
 
 Results:
 
 ```
-kube-controller-manager.kubeconfig
+training0@provisioner:~$ ls -alh kube-controller-manager.kubeconfig
+-rw------- 1 training0 training0 6.3K Nov  9 10:33 kube-controller-manager.kubeconfig
 ```
 
 
@@ -135,32 +144,34 @@ kube-controller-manager.kubeconfig
 Generate a kubeconfig file for the `kube-scheduler` service:
 
 ```
-{
   kubectl config set-cluster kubernetes-the-hard-way \
     --certificate-authority=ca.pem \
     --embed-certs=true \
     --server=https://127.0.0.1:6443 \
     --kubeconfig=kube-scheduler.kubeconfig
-
+```
+```
   kubectl config set-credentials system:kube-scheduler \
     --client-certificate=kube-scheduler.pem \
     --client-key=kube-scheduler-key.pem \
     --embed-certs=true \
     --kubeconfig=kube-scheduler.kubeconfig
-
+```
+```
   kubectl config set-context default \
     --cluster=kubernetes-the-hard-way \
     --user=system:kube-scheduler \
     --kubeconfig=kube-scheduler.kubeconfig
-
+```
+```
   kubectl config use-context default --kubeconfig=kube-scheduler.kubeconfig
-}
 ```
 
 Results:
 
 ```
-kube-scheduler.kubeconfig
+training0@provisioner:~$ ls -alh kube-scheduler.kubeconfig
+-rw------- 1 training0 training0 6.3K Nov  9 10:35 kube-scheduler.kubeconfig
 ```
 
 ### The admin Kubernetes Configuration File
@@ -168,36 +179,45 @@ kube-scheduler.kubeconfig
 Generate a kubeconfig file for the `admin` user:
 
 ```
-{
   kubectl config set-cluster kubernetes-the-hard-way \
     --certificate-authority=ca.pem \
     --embed-certs=true \
     --server=https://127.0.0.1:6443 \
     --kubeconfig=admin.kubeconfig
-
+```
+```
   kubectl config set-credentials admin \
     --client-certificate=admin.pem \
     --client-key=admin-key.pem \
     --embed-certs=true \
     --kubeconfig=admin.kubeconfig
-
+```
+```
   kubectl config set-context default \
     --cluster=kubernetes-the-hard-way \
     --user=admin \
     --kubeconfig=admin.kubeconfig
-
+```
+```
   kubectl config use-context default --kubeconfig=admin.kubeconfig
-}
 ```
 
 Results:
 
 ```
-admin.kubeconfig
+training0@provisioner:~$ ls -alh admin.kubeconfig
+-rw------- 1 training0 training0 6.2K Nov  9 10:37 admin.kubeconfig
 ```
 
 
-## 
+## Validate the previous steps 
+
+You should have 7 kubeconfig's on your machine.
+
+```
+taining0@provisioner:~$ ls *.kubeconfig | wc -l
+7
+```
 
 ## Distribute the Kubernetes Configuration Files
 

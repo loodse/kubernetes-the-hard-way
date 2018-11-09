@@ -12,6 +12,13 @@ Generate an encryption key:
 ENCRYPTION_KEY=$(head -c 32 /dev/urandom | base64)
 ```
 
+Check if you generated an encryption key.
+
+```
+training0@provisioner:~$ echo $ENCRYPTION_KEY
+9a5jt948TwV2+YpgknOiBx5ya4xbLdSkwTZGFWUbsLs=
+```
+
 ## The Encryption Config File
 
 Create the `encryption-config.yaml` encryption config file:
