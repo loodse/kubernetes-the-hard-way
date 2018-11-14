@@ -4,11 +4,6 @@
 
 This tutorial leverages the [Google Cloud Platform](https://cloud.google.com/) to streamline provisioning of the compute infrastructure required to bootstrap a Kubernetes cluster from the ground up. You get the GCP Account for those course from your Loodse instructor.
 
-## Google Cloud Shell 
-
-To minimize the setup overhead we will use the Google Cloud Shell, which has the benefit, that nearly all tools we need are pre-installed and configured.
-But you could also run those trainings from your local machine.
-
 ## Google Cloud Platform SDK
 
 ### optional: Install the Google Cloud SDK (if you're running it locally)
@@ -44,19 +39,6 @@ gcloud config set compute/zone europe-west3-c
 ```
 
 > Use the `gcloud compute zones list` command to view additional regions and zones.
-
-## Running Commands in Parallel 
-
-### with Cloud Shell Tabs
-
-### with tmux
--[tmux](https://github.com/tmux/tmux/wiki) can be used to run commands on multiple compute instances at the same time. Labs in this tutorial may require running the same commands across multiple computeinstances, in those cases consider using tmux and splitting a window into multiple panes with `synchronize-panes` enabled to speed up the provisioning process.
-
--> The use of tmux is optional and not required to complete this tutorial.
--
--![tmux screenshot](images/tmux-screenshot.png)
--
--> Enable `synchronize-panes`: `ctrl+b` then `shift :`. Then type `set synchronize-panes on` at the prompt. To disable synchronization: `set synchronize-panes off`.
 
 ## Next
 

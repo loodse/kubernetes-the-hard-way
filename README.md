@@ -38,4 +38,4 @@ This tutorial assumes you have access to the [Google Cloud Platform](https://clo
 * [Provisioning Pod Network Routes](docs/11-pod-network-routes.md)
 * [Deploying the DNS Cluster Add-on](docs/12-dns-addon.md)
 * [Smoke Test](docs/13-smoke-test.md)
-* [Cleaning Up](docs/14-cleanup.md)
+

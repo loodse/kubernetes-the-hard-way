@@ -7,7 +7,7 @@ Kubernetes components are stateless and store cluster state in [etcd](https://gi
 The commands in this lab must be run on each controller instance: `controller-0`, `controller-1`, and `controller-2`. Login to each controller instance using the `gcloud` command. Example:
 
 ```
-gcloud compute ssh controller-0
+$ gcloud compute ssh controller-0
 ```
 
 ## Bootstrapping an etcd Cluster Member
@@ -17,7 +17,7 @@ gcloud compute ssh controller-0
 Download the official etcd release binaries from the [coreos/etcd](https://github.com/coreos/etcd) GitHub project:
 
 ```
-wget -q --show-progress --https-only --timestamping \
+$ wget -q --show-progress --https-only --timestamping \
   "https://github.com/coreos/etcd/releases/download/v3.3.9/etcd-v3.3.9-linux-amd64.tar.gz"
 ```
 
@@ -58,6 +58,7 @@ $ INTERNAL_IP=$(curl -s -H "Metadata-Flavor: Google" \
 ```
 
 > output
+
 ```
 $ training0@controller-0:~$ echo $INTERNAL_IP
 10.240.0.10
@@ -70,6 +71,7 @@ $ ETCD_NAME=$(hostname -s)
 ```
 
 > output
+
 ```
 $ training0@controller-0:~$ echo $ETCD_NAME
 controller-0
@@ -78,7 +80,7 @@ controller-0
 Create the `etcd.service` systemd unit file:
 
 ```
-cat <<EOF | sudo tee /etc/systemd/system/etcd.service
+$ cat <<EOF | sudo tee /etc/systemd/system/etcd.service
 [Unit]
 Description=etcd
 Documentation=https://github.com/coreos
@@ -111,8 +113,9 @@ EOF
 ```
 
 > output
+
 ```
-guus@controller-0:~$ cat /etc/systemd/system/etcd.service
+training0@controller-0:~$ cat /etc/systemd/system/etcd.service
 [Unit]
 Description=etcd
 Documentation=https://github.com/coreos

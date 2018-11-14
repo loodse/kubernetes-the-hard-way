@@ -17,7 +17,7 @@ In this section a dedicated [Virtual Private Cloud](https://cloud.google.com/com
 Create the `kubernetes-the-hard-way` custom VPC network:
 
 ```
-gcloud compute networks create kubernetes-the-hard-way --subnet-mode custom
+$ gcloud compute networks create kubernetes-the-hard-way --subnet-mode custom
 ```
 
 A [subnet](https://cloud.google.com/compute/docs/vpc/#vpc_networks_and_subnets) must be provisioned with an IP address range large enough to assign a private IP address to each node in the Kubernetes cluster.
@@ -25,7 +25,7 @@ A [subnet](https://cloud.google.com/compute/docs/vpc/#vpc_networks_and_subnets) 
 Create the `kubernetes` subnet in the `kubernetes-the-hard-way` VPC network:
 
 ```
-gcloud compute networks subnets create kubernetes \
+$ gcloud compute networks subnets create kubernetes \
   --network kubernetes-the-hard-way \
   --range 10.240.0.0/24
 ```
@@ -37,7 +37,7 @@ gcloud compute networks subnets create kubernetes \
 Create a firewall rule that allows internal communication across all protocols:
 
 ```
-gcloud compute firewall-rules create kubernetes-the-hard-way-allow-internal \
+$ gcloud compute firewall-rules create kubernetes-the-hard-way-allow-internal \
   --allow tcp,udp,icmp \
   --network kubernetes-the-hard-way \
   --source-ranges 10.240.0.0/24,10.200.0.0/16
@@ -46,7 +46,7 @@ gcloud compute firewall-rules create kubernetes-the-hard-way-allow-internal \
 Create a firewall rule that allows external SSH, ICMP, and HTTPS:
 
 ```
-gcloud compute firewall-rules create kubernetes-the-hard-way-allow-external \
+$ gcloud compute firewall-rules create kubernetes-the-hard-way-allow-external \
   --allow tcp:22,tcp:6443,icmp \
   --network kubernetes-the-hard-way \
   --source-ranges 0.0.0.0/0
@@ -57,7 +57,7 @@ gcloud compute firewall-rules create kubernetes-the-hard-way-allow-external \
 List the firewall rules in the `kubernetes-the-hard-way` VPC network:
 
 ```
-gcloud compute firewall-rules list --filter="network:kubernetes-the-hard-way"
+$ gcloud compute firewall-rules list --filter="network:kubernetes-the-hard-way"
 ```
 
 > output
@@ -73,14 +73,14 @@ kubernetes-the-hard-way-allow-internal  kubernetes-the-hard-way  INGRESS    1000
 Allocate a static IP address that will be attached to the external load balancer fronting the Kubernetes API Servers:
 
 ```
-gcloud compute addresses create kubernetes-the-hard-way \
+$ gcloud compute addresses create kubernetes-the-hard-way \
   --region $(gcloud config get-value compute/region)
 ```
 
 Verify the `kubernetes-the-hard-way` static IP address was created in your default compute region:
 
 ```
-gcloud compute addresses list --filter="name=('kubernetes-the-hard-way')"
+$ gcloud compute addresses list --filter="name=('kubernetes-the-hard-way')"
 ```
 
 > output
@@ -99,7 +99,7 @@ The compute instances in this lab will be provisioned using [Ubuntu Server](http
 Create three compute instances which will host the Kubernetes control plane:
 
 ```
-for i in 0 1 2; do
+$ for i in 0 1 2; do
   gcloud compute instances create controller-${i} \
     --async \
     --boot-disk-size 200GB \
@@ -123,7 +123,7 @@ Each worker instance requires a pod subnet allocation from the Kubernetes cluste
 Create three compute instances which will host the Kubernetes worker nodes:
 
 ```
-for i in 0 1 2; do
+$ for i in 0 1 2; do
   gcloud beta compute instances create worker-${i} \
     --async \
     --boot-disk-size 200GB \
@@ -147,7 +147,7 @@ done
 List the compute instances in your default compute zone:
 
 ```
-gcloud compute instances list
+$ gcloud compute instances list
 ```
 
 > output
@@ -170,7 +170,7 @@ SSH will be used to configure the controller and worker instances. When connecti
 Test SSH access to the `controller-0` compute instances:
 
 ```
-gcloud compute ssh controller-0
+$ gcloud compute ssh controller-0
 ```
 
 If this is your first time connecting to a compute instance SSH keys will be generated for you. Enter a passphrase at the prompt to continue:
@@ -236,7 +236,7 @@ Welcome to Ubuntu 18.04.1 LTS (GNU/Linux 4.15.0-1023-gcp x86_64)
 Type `exit` at the prompt to exit the `controller-0` compute instance:
 
 ```
-$USER@controller-0:~$ exit
+$ exit
 ```
 > output
 

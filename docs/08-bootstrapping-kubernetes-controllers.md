@@ -7,7 +7,7 @@ In this lab you will bootstrap the Kubernetes control plane across three compute
 The commands in this lab must be run on each controller instance: `controller-0`, `controller-1`, and `controller-2`. Login to each controller instance using the `gcloud` command. Example:
 
 ```
-gcloud compute ssh controller-0
+$ gcloud compute ssh controller-0
 ```
 
 ## Provision the Kubernetes Control Plane
@@ -23,7 +23,7 @@ $ sudo mkdir -p /etc/kubernetes/config
 Download the official Kubernetes release binaries:
 
 ```
-wget -q --show-progress --https-only --timestamping \
+$ wget -q --show-progress --https-only --timestamping \
   "https://storage.googleapis.com/kubernetes-release/release/v1.12.0/bin/linux/amd64/kube-apiserver" \
   "https://storage.googleapis.com/kubernetes-release/release/v1.12.0/bin/linux/amd64/kube-controller-manager" \
   "https://storage.googleapis.com/kubernetes-release/release/v1.12.0/bin/linux/amd64/kube-scheduler" \
@@ -55,6 +55,7 @@ $ INTERNAL_IP=$(curl -s -H "Metadata-Flavor: Google" \
 ```
 
 > output
+
 ```
 training0@controller-0:~$ echo $INTERNAL_IP
 10.240.0.10
@@ -310,6 +311,8 @@ $ sudo systemctl enable nginx
 $ kubectl get componentstatuses --kubeconfig admin.kubeconfig
 ```
 
+> output
+
 ```
 NAME                 STATUS    MESSAGE              ERROR
 controller-manager   Healthy   ok
@@ -324,6 +327,8 @@ Test the nginx HTTP health check proxy:
 ```
 $ curl -H "Host: kubernetes.default.svc.cluster.local" -i http://127.0.0.1/healthz
 ```
+
+> output
 
 ```
 HTTP/1.1 200 OK
@@ -345,7 +350,7 @@ In this section you will configure RBAC permissions to allow the Kubernetes API 
 > This tutorial sets the Kubelet `--authorization-mode` flag to `Webhook`. Webhook mode uses the [SubjectAccessReview](https://kubernetes.io/docs/admin/authorization/#checking-api-access) API to determine authorization.
 
 ```
-gcloud compute ssh controller-0
+$ gcloud compute ssh controller-0
 ```
 
 Create the `system:kube-apiserver-to-kubelet` [ClusterRole](https://kubernetes.io/docs/admin/authorization/rbac/#role-and-clusterrole) with permissions to access the Kubelet API and perform most common tasks associated with managing pods:
