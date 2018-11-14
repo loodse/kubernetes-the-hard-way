@@ -5,9 +5,10 @@ In this lab you will install the command line utilities required to complete thi
 
 ## Provision the provisoner 
 
+Run this command in the Cloud Shell.
 
 ```
-gcloud beta compute instances create provisioner --zone=europe-west3-c --machine-type=n1-standard-1 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --scopes=https://www.googleapis.com/auth/cloud-platform --image=ubuntu-1804-bionic-v20181029 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=provisioner
+$ gcloud beta compute instances create provisioner --zone=europe-west3-c --machine-type=n1-standard-1 --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --scopes=https://www.googleapis.com/auth/cloud-platform --image=ubuntu-1804-bionic-v20181029 --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=provisioner
 ```
 
 ## Install CFSSL
