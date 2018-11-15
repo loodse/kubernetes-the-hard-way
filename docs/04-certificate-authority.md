@@ -9,9 +9,7 @@ In this section you will provision a Certificate Authority that can be used to g
 Generate the CA configuration file, certificate, and private key:
 
 ```
-{
-
-cat > ca-config.json <<EOF
+$ cat > ca-config.json <<EOF
 {
   "signing": {
     "default": {
@@ -26,8 +24,10 @@ cat > ca-config.json <<EOF
   }
 }
 EOF
+```
 
-cat > ca-csr.json <<EOF
+```
+$ cat > ca-csr.json <<EOF
 {
   "CN": "Kubernetes",
   "key": {
@@ -36,26 +36,29 @@ cat > ca-csr.json <<EOF
   },
   "names": [
     {
-      "C": "US",
-      "L": "Portland",
-      "O": "Kubernetes",
-      "OU": "CA",
-      "ST": "Oregon"
+      "C": "DE",
+      "L": "Niedersachsen",
+      "O": "system:masters",
+      "OU": "Kubernetes The Hard Way",
+      "ST": "Guetersloh"
     }
   ]
 }
 EOF
+```
 
-cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+Generate the certificates
 
-}
+```
+$ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 ```
 
 Results:
 
 ```
-ca-key.pem
-ca.pem
+$ training0@provisioner:~$ ls -alh *.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:29 ca-key.pem
+-rw-rw-r-- 1 training0 training0 1.4K Nov  8 15:29 ca.pem
 ```
 
 ## Client and Server Certificates
@@ -67,9 +70,7 @@ In this section you will generate client and server certificates for each Kubern
 Generate the `admin` client certificate and private key:
 
 ```
-{
-
-cat > admin-csr.json <<EOF
+$ cat > admin-csr.json <<EOF
 {
   "CN": "admin",
   "key": {
@@ -78,31 +79,32 @@ cat > admin-csr.json <<EOF
   },
   "names": [
     {
-      "C": "US",
-      "L": "Portland",
+      "C": "DE",
+      "L": "Niedersachsen",
       "O": "system:masters",
       "OU": "Kubernetes The Hard Way",
-      "ST": "Oregon"
+      "ST": "Guetersloh"
     }
   ]
 }
 EOF
+```
 
-cfssl gencert \
+```
+$ cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
   -profile=kubernetes \
   admin-csr.json | cfssljson -bare admin
-
-}
 ```
 
 Results:
 
 ```
-admin-key.pem
-admin.pem
+$ training0@provisioner:~$ ls -alh admin*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:30 admin-key.pem
+-rw-rw-r-- 1 training0 training0 1.4K Nov  8 15:30 admin.pem
 ```
 
 ### The Kubelet Client Certificates
@@ -112,7 +114,7 @@ Kubernetes uses a [special-purpose authorization mode](https://kubernetes.io/doc
 Generate a certificate and private key for each Kubernetes worker node:
 
 ```
-for instance in worker-0 worker-1 worker-2; do
+$ for instance in worker-0 worker-1 worker-2; do
 cat > ${instance}-csr.json <<EOF
 {
   "CN": "system:node:${instance}",
@@ -122,11 +124,11 @@ cat > ${instance}-csr.json <<EOF
   },
   "names": [
     {
-      "C": "US",
-      "L": "Portland",
-      "O": "system:nodes",
+      "C": "DE",
+      "L": "Niedersachsen",
+      "O": "system:masters",
       "OU": "Kubernetes The Hard Way",
-      "ST": "Oregon"
+      "ST": "Guetersloh"
     }
   ]
 }
@@ -151,12 +153,13 @@ done
 Results:
 
 ```
-worker-0-key.pem
-worker-0.pem
-worker-1-key.pem
-worker-1.pem
-worker-2-key.pem
-worker-2.pem
+$ training0@provisioner:~$ ls -alh worker*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:34 worker-0-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:34 worker-0.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:34 worker-1-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:34 worker-1.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:34 worker-2-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:34 worker-2.pem
 ```
 
 ### The Controller Manager Client Certificate
@@ -164,9 +167,7 @@ worker-2.pem
 Generate the `kube-controller-manager` client certificate and private key:
 
 ```
-{
-
-cat > kube-controller-manager-csr.json <<EOF
+$ cat > kube-controller-manager-csr.json <<EOF
 {
   "CN": "system:kube-controller-manager",
   "key": {
@@ -184,22 +185,23 @@ cat > kube-controller-manager-csr.json <<EOF
   ]
 }
 EOF
+```
 
-cfssl gencert \
+```
+$ cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
   -profile=kubernetes \
   kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager
-
-}
 ```
 
 Results:
 
 ```
-kube-controller-manager-key.pem
-kube-controller-manager.pem
+$ training0@provisioner:~$ ls -alh kube-controller-manager*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:37 kube-controller-manager-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:37 kube-controller-manager.pem
 ```
 
 
@@ -208,9 +210,7 @@ kube-controller-manager.pem
 Generate the `kube-proxy` client certificate and private key:
 
 ```
-{
-
-cat > kube-proxy-csr.json <<EOF
+$ cat > kube-proxy-csr.json <<EOF
 {
   "CN": "system:kube-proxy",
   "key": {
@@ -228,22 +228,23 @@ cat > kube-proxy-csr.json <<EOF
   ]
 }
 EOF
+```
 
-cfssl gencert \
+```
+$ cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
   -profile=kubernetes \
-  kube-proxy-csr.json | cfssljson -bare kube-proxy
-
-}
+  kube-proxy-csr.json | cfssljson -bare kube-proxys
 ```
 
 Results:
 
 ```
-kube-proxy-key.pem
-kube-proxy.pem
+$ training0@provisioner:~$ ls -alh kube-proxy*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:40 kube-proxys-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:40 kube-proxys.pem
 ```
 
 ### The Scheduler Client Certificate
@@ -251,9 +252,7 @@ kube-proxy.pem
 Generate the `kube-scheduler` client certificate and private key:
 
 ```
-{
-
-cat > kube-scheduler-csr.json <<EOF
+$ cat > kube-scheduler-csr.json <<EOF
 {
   "CN": "system:kube-scheduler",
   "key": {
@@ -271,22 +270,23 @@ cat > kube-scheduler-csr.json <<EOF
   ]
 }
 EOF
+```
 
-cfssl gencert \
+```
+$ cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
   -profile=kubernetes \
   kube-scheduler-csr.json | cfssljson -bare kube-scheduler
-
-}
 ```
 
 Results:
 
 ```
-kube-scheduler-key.pem
-kube-scheduler.pem
+$ training0@provisioner:~$ ls -alh kube-scheduler*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:42 kube-scheduler-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:42 kube-scheduler.pem
 ```
 
 
@@ -297,13 +297,20 @@ The `kubernetes-the-hard-way` static IP address will be included in the list of 
 Generate the Kubernetes API Server certificate and private key:
 
 ```
-{
-
-KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-the-hard-way \
+$ KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-the-hard-way \
   --region $(gcloud config get-value compute/region) \
   --format 'value(address)')
+```
 
-cat > kubernetes-csr.json <<EOF
+> output
+
+```
+training0@provisioner:~$ echo $KUBERNETES_PUBLIC_ADDRESS
+35.198.149.45
+```
+
+```
+$ cat > kubernetes-csr.json <<EOF
 {
   "CN": "kubernetes",
   "key": {
@@ -321,23 +328,24 @@ cat > kubernetes-csr.json <<EOF
   ]
 }
 EOF
+```
 
-cfssl gencert \
+```
+$ cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
   -hostname=10.32.0.1,10.240.0.10,10.240.0.11,10.240.0.12,${KUBERNETES_PUBLIC_ADDRESS},127.0.0.1,kubernetes.default \
   -profile=kubernetes \
   kubernetes-csr.json | cfssljson -bare kubernetes
-
-}
 ```
 
 Results:
 
 ```
-kubernetes-key.pem
-kubernetes.pem
+$ training0@provisioner:~$ ls -alh kubernetes*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:45 kubernetes-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:45 kubernetes.pem
 ```
 
 ## The Service Account Key Pair
@@ -347,9 +355,7 @@ The Kubernetes Controller Manager leverages a key pair to generate and sign serv
 Generate the `service-account` certificate and private key:
 
 ```
-{
-
-cat > service-account-csr.json <<EOF
+$ cat > service-account-csr.json <<EOF
 {
   "CN": "service-accounts",
   "key": {
@@ -367,31 +373,54 @@ cat > service-account-csr.json <<EOF
   ]
 }
 EOF
+```
 
-cfssl gencert \
+```
+$ cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
   -profile=kubernetes \
   service-account-csr.json | cfssljson -bare service-account
-
-}
 ```
 
 Results:
 
 ```
-service-account-key.pem
-service-account.pem
+$ training0@provisioner:~$ ls -alh service-account*.pem
+-rw------- 1 training0 training0 1.7K Nov  8 15:47 service-account-key.pem
+-rw-rw-r-- 1 training0 training0 1.5K Nov  8 15:47 service-account.pem
 ```
 
+## Validate
+
+You should have 20 pem's
+
+```
+training0@provisioner:~$ ls *.pem | wc -l
+20
+```
+
+and 11 json's
+
+```
+training0@provisioner:~$ ls *.json | wc -l
+11
+```
+
+and at least 10 csr's
+
+```
+training0@provisioner:~$ ls *.csr | wc -l
+10
+```
 
 ## Distribute the Client and Server Certificates
 
 Copy the appropriate certificates and private keys to each worker instance:
 
 ```
-for instance in worker-0 worker-1 worker-2; do
+$ for instance in worker-0 worker-1 worker-2; do
   gcloud compute scp ca.pem ${instance}-key.pem ${instance}.pem ${instance}:~/
 done
 ```
@@ -399,7 +428,7 @@ done
 Copy the appropriate certificates and private keys to each controller instance:
 
 ```
-for instance in controller-0 controller-1 controller-2; do
+$ for instance in controller-0 controller-1 controller-2; do
   gcloud compute scp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem \
     service-account-key.pem service-account.pem ${instance}:~/
 done

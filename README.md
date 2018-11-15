@@ -1,4 +1,4 @@
-# Kubernetes The Hard Way
+# Kubernetes The Hard Way (Loodse Fork)
 
 This tutorial walks you through setting up Kubernetes the hard way. This guide is not for people looking for a fully automated command to bring up a Kubernetes cluster. If that's you then check out [Google Kubernetes Engine](https://cloud.google.com/kubernetes-engine), or the [Getting Started Guides](http://kubernetes.io/docs/getting-started-guides/).
 
@@ -38,4 +38,4 @@ This tutorial assumes you have access to the [Google Cloud Platform](https://clo
 * [Provisioning Pod Network Routes](docs/11-pod-network-routes.md)
 * [Deploying the DNS Cluster Add-on](docs/12-dns-addon.md)
 * [Smoke Test](docs/13-smoke-test.md)
-* [Cleaning Up](docs/14-cleanup.md)
+

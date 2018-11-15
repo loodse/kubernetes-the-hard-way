@@ -7,22 +7,17 @@ In this lab you will bootstrap three Kubernetes worker nodes. The following comp
 The commands in this lab must be run on each worker instance: `worker-0`, `worker-1`, and `worker-2`. Login to each worker instance using the `gcloud` command. Example:
 
 ```
-gcloud compute ssh worker-0
+$ gcloud compute ssh worker-0
 ```
-
-### Running commands in parallel with tmux
-
-[tmux](https://github.com/tmux/tmux/wiki) can be used to run commands on multiple compute instances at the same time. See the [Running commands in parallel with tmux](01-prerequisites.md#running-commands-in-parallel-with-tmux) section in the Prerequisites lab.
 
 ## Provisioning a Kubernetes Worker Node
 
 Install the OS dependencies:
 
 ```
-{
-  sudo apt-get update
-  sudo apt-get -y install socat conntrack ipset
-}
+  $ sudo apt-get update
+  $ sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install
+  $ sudo apt-get -y install socat conntrack ipset
 ```
 
 > The socat binary enables support for the `kubectl port-forward` command.
@@ -30,7 +25,7 @@ Install the OS dependencies:
 ### Download and Install Worker Binaries
 
 ```
-wget -q --show-progress --https-only --timestamping \
+$ wget -q --show-progress --https-only --timestamping \
   https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.12.0/crictl-v1.12.0-linux-amd64.tar.gz \
   https://storage.googleapis.com/kubernetes-the-hard-way/runsc-50c283b9f56bb7200938d9e207355f05f79f0d17 \
   https://github.com/opencontainers/runc/releases/download/v1.0.0-rc5/runc.amd64 \
@@ -44,27 +39,25 @@ wget -q --show-progress --https-only --timestamping \
 Create the installation directories:
 
 ```
-sudo mkdir -p \
-  /etc/cni/net.d \
-  /opt/cni/bin \
-  /var/lib/kubelet \
-  /var/lib/kube-proxy \
-  /var/lib/kubernetes \
-  /var/run/kubernetes
+$ sudo mkdir -p \
+    /etc/cni/net.d \
+    /opt/cni/bin \
+    /var/lib/kubelet \
+    /var/lib/kube-proxy \
+    /var/lib/kubernetes \
+    /var/run/kubernetes
 ```
 
 Install the worker binaries:
 
 ```
-{
-  sudo mv runsc-50c283b9f56bb7200938d9e207355f05f79f0d17 runsc
-  sudo mv runc.amd64 runc
-  chmod +x kubectl kube-proxy kubelet runc runsc
-  sudo mv kubectl kube-proxy kubelet runc runsc /usr/local/bin/
-  sudo tar -xvf crictl-v1.12.0-linux-amd64.tar.gz -C /usr/local/bin/
-  sudo tar -xvf cni-plugins-amd64-v0.6.0.tgz -C /opt/cni/bin/
-  sudo tar -xvf containerd-1.2.0-rc.0.linux-amd64.tar.gz -C /
-}
+  $ sudo mv runsc-50c283b9f56bb7200938d9e207355f05f79f0d17 runsc
+  $ sudo mv runc.amd64 runc
+  $ chmod +x kubectl kube-proxy kubelet runc runsc
+  $ sudo mv kubectl kube-proxy kubelet runc runsc /usr/local/bin/
+  $ sudo tar -xvf crictl-v1.12.0-linux-amd64.tar.gz -C /usr/local/bin/
+  $ sudo tar -xvf cni-plugins-amd64-v0.6.0.tgz -C /opt/cni/bin/
+  $ sudo tar -xvf containerd-1.2.0-rc.0.linux-amd64.tar.gz -C /
 ```
 
 ### Configure CNI Networking
@@ -72,14 +65,21 @@ Install the worker binaries:
 Retrieve the Pod CIDR range for the current compute instance:
 
 ```
-POD_CIDR=$(curl -s -H "Metadata-Flavor: Google" \
-  http://metadata.google.internal/computeMetadata/v1/instance/attributes/pod-cidr)
+$ POD_CIDR=$(curl -s -H "Metadata-Flavor: Google" \
+    http://metadata.google.internal/computeMetadata/v1/instance/attributes/pod-cidr)
+```
+
+
+> output
+```
+training0@worker-0:~$ echo $POD_CIDR
+10.200.0.0/24
 ```
 
 Create the `bridge` network configuration file:
 
 ```
-cat <<EOF | sudo tee /etc/cni/net.d/10-bridge.conf
+$ cat <<EOF | sudo tee /etc/cni/net.d/10-bridge.conf
 {
     "cniVersion": "0.3.1",
     "name": "bridge",
@@ -101,7 +101,7 @@ EOF
 Create the `loopback` network configuration file:
 
 ```
-cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
+$ cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
 {
     "cniVersion": "0.3.1",
     "type": "loopback"
@@ -114,11 +114,11 @@ EOF
 Create the `containerd` configuration file:
 
 ```
-sudo mkdir -p /etc/containerd/
+$ sudo mkdir -p /etc/containerd/
 ```
 
 ```
-cat << EOF | sudo tee /etc/containerd/config.toml
+$ cat << EOF | sudo tee /etc/containerd/config.toml
 [plugins]
   [plugins.cri.containerd]
     snapshotter = "overlayfs"
@@ -142,7 +142,7 @@ EOF
 Create the `containerd.service` systemd unit file:
 
 ```
-cat <<EOF | sudo tee /etc/systemd/system/containerd.service
+$ cat <<EOF | sudo tee /etc/systemd/system/containerd.service
 [Unit]
 Description=containerd container runtime
 Documentation=https://containerd.io
@@ -168,17 +168,15 @@ EOF
 ### Configure the Kubelet
 
 ```
-{
-  sudo mv ${HOSTNAME}-key.pem ${HOSTNAME}.pem /var/lib/kubelet/
-  sudo mv ${HOSTNAME}.kubeconfig /var/lib/kubelet/kubeconfig
-  sudo mv ca.pem /var/lib/kubernetes/
-}
+  $ sudo mv ${HOSTNAME}-key.pem ${HOSTNAME}.pem /var/lib/kubelet/
+  $ sudo mv ${HOSTNAME}.kubeconfig /var/lib/kubelet/kubeconfig
+  $ sudo mv ca.pem /var/lib/kubernetes/
 ```
 
 Create the `kubelet-config.yaml` configuration file:
 
 ```
-cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
+$ cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
 authentication:
@@ -206,7 +204,7 @@ EOF
 Create the `kubelet.service` systemd unit file:
 
 ```
-cat <<EOF | sudo tee /etc/systemd/system/kubelet.service
+$ cat <<EOF | sudo tee /etc/systemd/system/kubelet.service
 [Unit]
 Description=Kubernetes Kubelet
 Documentation=https://github.com/kubernetes/kubernetes
@@ -234,13 +232,13 @@ EOF
 ### Configure the Kubernetes Proxy
 
 ```
-sudo mv kube-proxy.kubeconfig /var/lib/kube-proxy/kubeconfig
+$ sudo mv kube-proxy.kubeconfig /var/lib/kube-proxy/kubeconfig
 ```
 
 Create the `kube-proxy-config.yaml` configuration file:
 
 ```
-cat <<EOF | sudo tee /var/lib/kube-proxy/kube-proxy-config.yaml
+$ cat <<EOF | sudo tee /var/lib/kube-proxy/kube-proxy-config.yaml
 kind: KubeProxyConfiguration
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 clientConnection:
@@ -253,7 +251,7 @@ EOF
 Create the `kube-proxy.service` systemd unit file:
 
 ```
-cat <<EOF | sudo tee /etc/systemd/system/kube-proxy.service
+$ cat <<EOF | sudo tee /etc/systemd/system/kube-proxy.service
 [Unit]
 Description=Kubernetes Kube Proxy
 Documentation=https://github.com/kubernetes/kubernetes
@@ -269,14 +267,75 @@ WantedBy=multi-user.target
 EOF
 ```
 
+## Validate
+
+```
+training0@worker-0:~$ ls /etc/systemd/system/kube* | wc -l
+2
+```
+
+```
+training0@worker-0:~$ ls -l /var/lib/kubelet/* | wc -l
+4
+```
+
+```
+training0@worker-0:~$ ls -l /var/lib/kube-proxy/* | wc -l
+2
+```
+
 ### Start the Worker Services
 
 ```
-{
-  sudo systemctl daemon-reload
-  sudo systemctl enable containerd kubelet kube-proxy
-  sudo systemctl start containerd kubelet kube-proxy
-}
+  $ sudo systemctl daemon-reload
+  $ sudo systemctl enable containerd kubelet kube-proxy
+  $ sudo systemctl start containerd kubelet kube-proxy
+```
+
+Check if every service is running:
+
+```
+$ training0@worker-0:~$ sudo systemctl status containerd kubelet kube-proxy
+● containerd.service - containerd container runtime
+   Loaded: loaded (/etc/systemd/system/containerd.service; enabled; vendor preset: enabled)
+   Active: active (running) since Fri 2018-11-09 12:30:21 UTC; 6s ago
+     Docs: https://containerd.io
+  Process: 28001 ExecStartPre=/sbin/modprobe overlay (code=exited, status=0/SUCCESS)
+ Main PID: 28003 (containerd)
+    Tasks: 13 (limit: 4915)
+   CGroup: /system.slice/containerd.service
+           └─28003 /bin/containerd
+
+Nov 09 12:30:21 worker-0 containerd[28003]: time="2018-11-09T12:30:21.927389438Z" level=info msg="Get image filesystem path "/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs""
+Nov 09 12:30:21 worker-0 containerd[28003]: time="2018-11-09T12:30:21.927775214Z" level=info msg="loading plugin "io.containerd.grpc.v1.introspection"..." type=io.containerd.grpc.v1
+.
+.
+.
+
+● kubelet.service - Kubernetes Kubelet
+   Loaded: loaded (/etc/systemd/system/kubelet.service; enabled; vendor preset: enabled)
+   Active: active (running) since Fri 2018-11-09 12:30:21 UTC; 6s ago
+     Docs: https://github.com/kubernetes/kubernetes
+ Main PID: 28008 (kubelet)
+    Tasks: 18 (limit: 4915)
+   CGroup: /system.slice/kubelet.service
+           └─28008 /usr/local/bin/kubelet --config=/var/lib/kubelet/kubelet-config.yaml --container-runtime=remote --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --image-pull-progress-deadline=2m --kubeconfig=/var/lib/kubelet/kubeconfig --network-plugin=cni --register-node=true --v=2
+
+Nov 09 12:30:27 worker-0 kubelet[28008]: E1109 12:30:27.784121   28008 kubelet.go:2236] node "worker-0" not found
+.
+.
+.
+
+● kube-proxy.service - Kubernetes Kube Proxy
+   Loaded: loaded (/etc/systemd/system/kube-proxy.service; enabled; vendor preset: enabled)
+   Active: active (running) since Fri 2018-11-09 12:30:21 UTC; 6s ago
+     Docs: https://github.com/kubernetes/kubernetes
+ Main PID: 28002 (kube-proxy)
+    Tasks: 10 (limit: 4915)
+   CGroup: /system.slice/kube-proxy.service
+           └─28002 /usr/local/bin/kube-proxy --config=/var/lib/kube-proxy/kube-proxy-config.yaml
+
+Nov 09 12:30:21 worker-0 systemd[1]: Started Kubernetes Kube Proxy.
 ```
 
 > Remember to run the above commands on each worker node: `worker-0`, `worker-1`, and `worker-2`.
@@ -288,7 +347,7 @@ EOF
 List the registered Kubernetes nodes:
 
 ```
-gcloud compute ssh controller-0 \
+$ gcloud compute ssh controller-0 \
   --command "kubectl get nodes --kubeconfig admin.kubeconfig"
 ```
 
