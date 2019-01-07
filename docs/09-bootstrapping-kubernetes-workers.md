@@ -4,10 +4,10 @@ In this lab you will bootstrap three Kubernetes worker nodes. The following comp
 
 ## Prerequisites
 
-The commands in this lab must be run on each worker instance: `worker-0`, `worker-1`, and `worker-2`. Login to each worker instance using the `gcloud` command. Example:
+The commands in this lab must be run on all instances. Example:
 
 ```
-gcloud compute ssh worker-0
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$(openstack server show kube-controller-1 -f value -c addresses|cut -d',' -f2|tr -d ' ')
 ```
 
 ### Running commands in parallel with tmux
@@ -65,48 +65,6 @@ Install the worker binaries:
   sudo tar -xvf cni-plugins-amd64-v0.6.0.tgz -C /opt/cni/bin/
   sudo tar -xvf containerd-1.2.0-rc.0.linux-amd64.tar.gz -C /
 }
-```
-
-### Configure CNI Networking
-
-Retrieve the Pod CIDR range for the current compute instance:
-
-```
-POD_CIDR=$(curl -s -H "Metadata-Flavor: Google" \
-  http://metadata.google.internal/computeMetadata/v1/instance/attributes/pod-cidr)
-```
-
-Create the `bridge` network configuration file:
-
-```
-cat <<EOF | sudo tee /etc/cni/net.d/10-bridge.conf
-{
-    "cniVersion": "0.3.1",
-    "name": "bridge",
-    "type": "bridge",
-    "bridge": "cnio0",
-    "isGateway": true,
-    "ipMasq": true,
-    "ipam": {
-        "type": "host-local",
-        "ranges": [
-          [{"subnet": "${POD_CIDR}"}]
-        ],
-        "routes": [{"dst": "0.0.0.0/0"}]
-    }
-}
-EOF
-```
-
-Create the `loopback` network configuration file:
-
-```
-cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
-{
-    "cniVersion": "0.3.1",
-    "type": "loopback"
-}
-EOF
 ```
 
 ### Configure containerd
@@ -201,7 +159,7 @@ tlsPrivateKeyFile: "/var/lib/kubelet/${HOSTNAME}-key.pem"
 EOF
 ```
 
-> The `resolvConf` configuration is used to avoid loops when using CoreDNS for service discovery on systems running `systemd-resolved`. 
+> The `resolvConf` configuration is used to avoid loops when using CoreDNS for service discovery on systems running `systemd-resolved`.
 
 Create the `kubelet.service` systemd unit file:
 
@@ -246,7 +204,7 @@ apiVersion: kubeproxy.config.k8s.io/v1alpha1
 clientConnection:
   kubeconfig: "/var/lib/kube-proxy/kubeconfig"
 mode: "iptables"
-clusterCIDR: "10.200.0.0/16"
+clusterCIDR: "10.244.0.0/16"
 EOF
 ```
 
@@ -279,7 +237,7 @@ EOF
 }
 ```
 
-> Remember to run the above commands on each worker node: `worker-0`, `worker-1`, and `worker-2`.
+> Remember to run the above commands on all nodes!
 
 ## Verification
 
@@ -288,17 +246,20 @@ EOF
 List the registered Kubernetes nodes:
 
 ```
-gcloud compute ssh controller-0 \
-  --command "kubectl get nodes --kubeconfig admin.kubeconfig"
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$(openstack server show kube-controller-1 -f value -c addresses|cut -d',' -f2|tr -d ' ')
+kubectl get nodes --kubeconfig admin.kubeconfig
 ```
 
 > output
 
 ```
-NAME       STATUS   ROLES    AGE   VERSION
-worker-0   Ready    <none>   35s   v1.12.0
-worker-1   Ready    <none>   36s   v1.12.0
-worker-2   Ready    <none>   36s   v1.12.0
+NAME                STATUS   ROLES    AGE   VERSION
+kube-controller-1   Ready    <none>   35s   v1.12.0
+kube-controller-2   Ready    <none>   36s   v1.12.0
+kube-controller-3   Ready    <none>   36s   v1.12.0
+kube-worker-1       Ready    <none>   36s   v1.12.0
+kube-worker-2       Ready    <none>   36s   v1.12.0
+kube-worker-3       Ready    <none>   36s   v1.12.0
 ```
 
 Next: [Configuring kubectl for Remote Access](10-configuring-kubectl.md)

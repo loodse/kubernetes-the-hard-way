@@ -112,7 +112,7 @@ Kubernetes uses a [special-purpose authorization mode](https://kubernetes.io/doc
 Generate a certificate and private key for each Kubernetes worker node:
 
 ```
-for instance in worker-0 worker-1 worker-2; do
+for instance in kube-worker-{1..3} kube-controller-{1..3}; do
 cat > ${instance}-csr.json <<EOF
 {
   "CN": "system:node:${instance}",
@@ -132,17 +132,12 @@ cat > ${instance}-csr.json <<EOF
 }
 EOF
 
-EXTERNAL_IP=$(gcloud compute instances describe ${instance} \
-  --format 'value(networkInterfaces[0].accessConfigs[0].natIP)')
-
-INTERNAL_IP=$(gcloud compute instances describe ${instance} \
-  --format 'value(networkInterfaces[0].networkIP)')
-
+WORKER_IPS=$(openstack server show $instance -f value -c addresses|sed 's/kubernetes-the-hard-way=//g'|tr -d ' ')
 cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
-  -hostname=${instance},${EXTERNAL_IP},${INTERNAL_IP} \
+  -hostname=${instance},${WORKER_IPS} \
   -profile=kubernetes \
   ${instance}-csr.json | cfssljson -bare ${instance}
 done
@@ -151,12 +146,12 @@ done
 Results:
 
 ```
-worker-0-key.pem
-worker-0.pem
-worker-1-key.pem
-worker-1.pem
-worker-2-key.pem
-worker-2.pem
+kube-worker-1-key.pem
+kube-worker-1.pem
+kube-worker-2-key.pem
+kube-worker-2.pem
+kube-worker-3-key.pem
+kube-worker-3.pem
 ```
 
 ### The Controller Manager Client Certificate
@@ -299,9 +294,8 @@ Generate the Kubernetes API Server certificate and private key:
 ```
 {
 
-KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-the-hard-way \
-  --region $(gcloud config get-value compute/region) \
-  --format 'value(address)')
+KUBERNETES_PUBLIC_ADDRESS=$(for id in {1..3}; do openstack server show kube-controller-$id -f value -c addresses|cut -d',' -f2|tr -d ' '|tr '\n' ','; done)
+LOADBALANCER_IP=$(openstack floating ip list --port 6f06cb1c-b433-47de-8da4-4a60e064a923 -f value -c "Floating IP Address")
 
 cat > kubernetes-csr.json <<EOF
 {
@@ -326,7 +320,7 @@ cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
-  -hostname=10.32.0.1,10.240.0.10,10.240.0.11,10.240.0.12,${KUBERNETES_PUBLIC_ADDRESS},127.0.0.1,kubernetes.default \
+  -hostname=${LOADBALANCER_IP},${KUBERNETES_PUBLIC_ADDRESS},127.0.0.1,kubernetes.default \
   -profile=kubernetes \
   kubernetes-csr.json | cfssljson -bare kubernetes
 
@@ -391,17 +385,21 @@ service-account.pem
 Copy the appropriate certificates and private keys to each worker instance:
 
 ```
-for instance in worker-0 worker-1 worker-2; do
-  gcloud compute scp ca.pem ${instance}-key.pem ${instance}.pem ${instance}:~/
+for instance in kube-worker-{1..3} kube-controller-{1..3}; do
+  scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \
+    ca.pem ${instance}-key.pem ${instance}.pem \
+    ubuntu@$(openstack server show $instance -f value -c addresses|cut -d',' -f2|tr -d ' '):~/
 done
 ```
 
 Copy the appropriate certificates and private keys to each controller instance:
 
 ```
-for instance in controller-0 controller-1 controller-2; do
-  gcloud compute scp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem \
-    service-account-key.pem service-account.pem ${instance}:~/
+for instance in kube-controller-{1..3}; do
+  scp -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no \
+    ca.pem ${instance}-key.pem ${instance}.pem \
+    ca-key.pem kubernetes-key.pem kubernetes.pem service-account-key.pem service-account.pem \
+    ubuntu@$(openstack server show $instance -f value -c addresses|cut -d',' -f2|tr -d ' '):~/
 done
 ```
 

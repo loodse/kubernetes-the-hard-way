@@ -7,9 +7,7 @@ In this lab you will delete the compute resources created during this tutorial.
 Delete the controller and worker compute instances:
 
 ```
-gcloud -q compute instances delete \
-  controller-0 controller-1 controller-2 \
-  worker-0 worker-1 worker-2
+for instance in kube-controller-{1..3} kube-worker-{1..3}; do openstack server delete $instance; done
 ```
 
 ## Networking
@@ -17,39 +15,41 @@ gcloud -q compute instances delete \
 Delete the external load balancer network resources:
 
 ```
-{
-  gcloud -q compute forwarding-rules delete kubernetes-forwarding-rule \
-    --region $(gcloud config get-value compute/region)
+# Delete the lbaas pool
+neutron lbaas-pool-delete kubernetes-the-hard-way-api-pool
 
-  gcloud -q compute target-pools delete kubernetes-target-pool
+# Delete the lbaas floating IP association
+neutron floatingip-disassociate $(openstack floating ip list --port $(neutron lbaas-loadbalancer-show kubernetes-the-hard-way -f value -c vip_port_id) -f value -c "ID")
 
-  gcloud -q compute http-health-checks delete kubernetes
+# Delete the lbaas listener
+neutron lbaas-listener-delete  kubernetes-the-hard-way-api
 
-  gcloud -q compute addresses delete kubernetes-the-hard-way
-}
+# Delete the lbaas loadbalancer
+neutron lbaas-loadbalancer-delete kubernetes-the-hard-way
 ```
 
-Delete the `kubernetes-the-hard-way` firewall rules:
+Delete the `kubernetes-the-hard-way` security group:
 
 ```
-gcloud -q compute firewall-rules delete \
-  kubernetes-the-hard-way-allow-nginx-service \
-  kubernetes-the-hard-way-allow-internal \
-  kubernetes-the-hard-way-allow-external \
-  kubernetes-the-hard-way-allow-health-check
+openstack security group delete kubernete
 ```
 
-Delete the `kubernetes-the-hard-way` network VPC:
+Delete the `kubernetes-the-hard-way` router:
 
 ```
-{
-  gcloud -q compute routes delete \
-    kubernetes-route-10-200-0-0-24 \
-    kubernetes-route-10-200-1-0-24 \
-    kubernetes-route-10-200-2-0-24
+openstack router remove subnet kubernetes-the-hard-way kubernetes-the-hard-way
+openstack router delete kubernetes-the-hard-way
+```
 
-  gcloud -q compute networks subnets delete kubernetes
+Delete the `kubernetes-the-hard-way` network and subnet:
 
-  gcloud -q compute networks delete kubernetes-the-hard-way
-}
+```
+openstack subnet delete kubernetes-the-hard-way
+openstack network delete kubernetes-the-hard-way
+```
+
+Delete the floating IPs. Be aware that this will delete _all_ floating IPs so do not execute it if you want to keep some:
+
+```
+for floating_ip in $(openstack floating ip list -f value -c ID); do openstack floating ip delete $floating_ip; done
 ```

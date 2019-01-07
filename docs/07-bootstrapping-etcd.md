@@ -4,10 +4,10 @@ Kubernetes components are stateless and store cluster state in [etcd](https://gi
 
 ## Prerequisites
 
-The commands in this lab must be run on each controller instance: `controller-0`, `controller-1`, and `controller-2`. Login to each controller instance using the `gcloud` command. Example:
+The commands in this lab must be run on each controller instance: `kube-controller-1`, `kube-controller-2`, and `kube-controller-3`. Login to each controller instance. Example:
 
 ```
-gcloud compute ssh controller-0
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$(openstack server show kube-controller-1 -f value -c addresses|cut -d',' -f2|tr -d ' ')
 ```
 
 ### Running commands in parallel with tmux
@@ -46,14 +46,19 @@ Extract and install the `etcd` server and the `etcdctl` command line utility:
 The instance internal IP address will be used to serve client requests and communicate with etcd cluster peers. Retrieve the internal IP address for the current compute instance:
 
 ```
-INTERNAL_IP=$(curl -s -H "Metadata-Flavor: Google" \
-  http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip)
+INTERNAL_IP=$(http://169.254.169.254/1.0/meta-data/local-ipv4)
 ```
 
 Each etcd member must have a unique name within an etcd cluster. Set the etcd name to match the hostname of the current compute instance:
 
 ```
 ETCD_NAME=$(hostname -s)
+```
+
+Find out locally the private IP addesses and generate an etcd connection string from them:
+
+```
+for server in kube-controller-{1..3}; do echo -n "$server=https://$(openstack server show kube-controller-$id -f value  -c addresses|cut -d',' -f1|sed 's/kubernetes-the-hard-way=//g'):2380,"; done
 ```
 
 Create the `etcd.service` systemd unit file:
@@ -80,7 +85,7 @@ ExecStart=/usr/local/bin/etcd \\
   --listen-client-urls https://${INTERNAL_IP}:2379,https://127.0.0.1:2379 \\
   --advertise-client-urls https://${INTERNAL_IP}:2379 \\
   --initial-cluster-token etcd-cluster-0 \\
-  --initial-cluster controller-0=https://10.240.0.10:2380,controller-1=https://10.240.0.11:2380,controller-2=https://10.240.0.12:2380 \\
+  --initial-cluster <<CONNECTION_STRING>> \\
   --initial-cluster-state new \\
   --data-dir=/var/lib/etcd
 Restart=on-failure
