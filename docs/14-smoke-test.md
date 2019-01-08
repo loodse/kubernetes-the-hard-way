@@ -160,4 +160,16 @@ ETag: "5baa4e63-264"
 Accept-Ranges: bytes
 ```
 
+## Volumes
+
+Check if we can create PersistentVolumeClaims which will create a corresponding PersistentVolume.
+
+```
+kubectl create -f test/pvc.yaml
+
+# wait ~1min and check if it has been bound
+watch kubectl get pvc
+```
+
+
 Next: [Cleaning Up](14-cleanup.md)
