@@ -174,6 +174,8 @@ Requires=containerd.service
 [Service]
 ExecStart=/usr/local/bin/kubelet \\
   --config=/var/lib/kubelet/kubelet-config.yaml \\
+  --cloud-provider=openstack \\
+  --cloud-config=/var/lib/kubernetes/cloud-config \\
   --container-runtime=remote \\
   --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
   --image-pull-progress-deadline=2m \\
@@ -224,6 +226,34 @@ RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
+EOF
+```
+
+### Install the cloud config
+
+To be able to utilize cloud provider features like load balancers or disks, kubernetes need to talk to the cloud provider API.
+For this a `cloud-config` file must be created which contains all necessary information to communicate with the OpenStack API.
+
+The file must be updated according to the OpenStack installation. 
+Potential values can be found in the openrc file, which can be downloaded from Horizon. 
+
+```
+cat <<EOF | sudo tee /var/lib/kubernetes/cloud-config
+[Global]
+auth-url    = "https://example.com:8000/v3"
+username    = "openstack-username"
+password    = "openstack-password"
+tenant-name = "openstack-tenant"
+domain-name = "openstack-domain"
+region      = "region1"
+
+[LoadBalancer]
+manage-security-groups = true
+
+[BlockStorage]
+ignore-volume-az  = true
+trust-device-path = false
+bs-version        = "v2"
 EOF
 ```
 
