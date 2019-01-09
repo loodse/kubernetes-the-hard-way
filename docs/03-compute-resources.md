@@ -94,8 +94,8 @@ neutron lbaas-pool-create  --name kubernetes-the-hard-way-api-pool --listener ku
 for server in kube-controller-{1..3}; do
   neutron lbaas-member-create \
     --subnet=kubernetes-the-hard-way \
-    --address $(openstack server show $server -c addresses -f value|cut -d'=' -f2)
-    --protocol-port=6443
+    --address $(openstack server show $server -c addresses -f value|cut -d'=' -f2) \
+    --protocol-port=6443 \
     kubernetes-the-hard-way-api-pool
 done
 ```
