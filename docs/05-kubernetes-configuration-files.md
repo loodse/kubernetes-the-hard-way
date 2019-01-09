@@ -13,7 +13,7 @@ Each kubeconfig requires a Kubernetes API Server to connect to. To support high 
 Retrieve the `kubernetes-the-hard-way` load balancer IP address:
 
 ```
-LOADBALANCER_IP=$(openstack floating ip list --port 6f06cb1c-b433-47de-8da4-4a60e064a923 -f value -c "Floating IP Address")
+LOADBALANCER_IP=$(openstack floating ip list --port $(neutron lbaas-loadbalancer-show kubernetes-the-hard-way -f=value -c vip_port_id) -f value -c "Floating IP Address")
 ```
 
 ### The kubelet Kubernetes Configuration File
