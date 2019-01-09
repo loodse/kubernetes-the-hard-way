@@ -61,9 +61,16 @@ Find out locally the private IP addesses and generate an etcd connection string 
 for server in kube-controller-{1..3}; do echo -n "$server=https://$(openstack server show $server -f value  -c addresses|cut -d'=' -f2|cut -d',' -f1|tr -d '\n'):2380,"; done
 ```
 
-Create the `etcd.service` systemd unit file:
+This should yield a string that looks like this:
 
 ```
+kube-controller-1=https://10.11.9.5:2380,kube-controller-2=https://10.11.9.11:2380,kube-controller-3=https://10.11.9.12:2380
+```
+
+SSH back to the kube-controller-1 instance and create the `etcd.service` systemd unit file:
+
+```
+CONNECTION_STRING=kube-controller-1=https://10.11.9.5:2380,kube-controller-2=https://10.11.9.11:2380,kube-controller-3=https://10.11.9.12:2380
 cat <<EOF | sudo tee /etc/systemd/system/etcd.service
 [Unit]
 Description=etcd
@@ -85,7 +92,7 @@ ExecStart=/usr/local/bin/etcd \\
   --listen-client-urls https://${INTERNAL_IP}:2379,https://127.0.0.1:2379 \\
   --advertise-client-urls https://${INTERNAL_IP}:2379 \\
   --initial-cluster-token etcd-cluster-0 \\
-  --initial-cluster <<CONNECTION_STRING>> \\
+  --initial-cluster $CONNECTION_STRING \\
   --initial-cluster-state new \\
   --data-dir=/var/lib/etcd
 Restart=on-failure
