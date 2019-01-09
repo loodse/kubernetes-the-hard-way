@@ -44,6 +44,7 @@ openstack router add subnet kubernetes-the-hard-way kubernetes-the-hard-way
 Create a firewall rule that allows external SSH and HTTPS for the Kubernetes API server:
 
 ```
+openstack security group create kubernetes
 openstack security group rule create --dst-port=22 kubernetes
 openstack security group rule create --dst-port=6443 kubernetes
 ```
