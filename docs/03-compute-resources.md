@@ -47,6 +47,7 @@ Create a firewall rule that allows external SSH and HTTPS for the Kubernetes API
 openstack security group create kubernetes
 openstack security group rule create --dst-port=22 kubernetes
 openstack security group rule create --dst-port=6443 kubernetes
+openstack security group rule create --protocol=any --remote-group=kubernetes kubernetes
 ```
 
 > An external load balancer will be used to expose the Kubernetes API Servers to remote clients.
