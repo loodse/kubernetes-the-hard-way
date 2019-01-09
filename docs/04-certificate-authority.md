@@ -295,6 +295,7 @@ Generate the Kubernetes API Server certificate and private key:
 {
 
 KUBERNETES_PUBLIC_ADDRESS=$(for id in {1..3}; do openstack server show kube-controller-$id -f value -c addresses|cut -d',' -f2|tr -d ' '|tr '\n' ','; done)
+KUBERNETES_PRIVATE_ADDRESSES=$(for id in {1..3}; do openstack server show kube-controller-$id -f value -c addresses|cut -d'=' -f2|cut -d',' -f1|tr -d '\n'; echo -n ','; done)
 LOADBALANCER_IP=$(openstack floating ip list --port $(neutron lbaas-loadbalancer-show kubernetes-the-hard-way -f=value -c vip_port_id) -f value -c "Floating IP Address")
 
 cat > kubernetes-csr.json <<EOF
@@ -320,7 +321,7 @@ cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
-  -hostname=${LOADBALANCER_IP},${KUBERNETES_PUBLIC_ADDRESS},127.0.0.1,kubernetes.default \
+  -hostname=${LOADBALANCER_IP},${KUBERNETES_PUBLIC_ADDRESS},${KUBERNETES_PRIVATE_ADDRESSES},127.0.0.1,kubernetes.default \
   -profile=kubernetes \
   kubernetes-csr.json | cfssljson -bare kubernetes
 
