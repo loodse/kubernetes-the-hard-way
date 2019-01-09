@@ -321,7 +321,7 @@ cfssl gencert \
   -ca=ca.pem \
   -ca-key=ca-key.pem \
   -config=ca-config.json \
-  -hostname=${LOADBALANCER_IP},${KUBERNETES_PUBLIC_ADDRESS},${KUBERNETES_PRIVATE_ADDRESSES},127.0.0.1,kubernetes.default \
+  -hostname=${LOADBALANCER_IP},${KUBERNETES_PUBLIC_ADDRESS},${KUBERNETES_PRIVATE_ADDRESSES},127.0.0.1,10.32.0.1,kubernetes.default \
   -profile=kubernetes \
   kubernetes-csr.json | cfssljson -bare kubernetes
 

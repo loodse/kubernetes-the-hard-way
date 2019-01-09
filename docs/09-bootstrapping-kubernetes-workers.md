@@ -18,10 +18,6 @@ for instance in kube-controller-{1..3} kube-worker-{1..3}; do \
 done
 ```
 
-### Running commands in parallel with tmux
-
-[tmux](https://github.com/tmux/tmux/wiki) can be used to run commands on multiple compute instances at the same time. See the [Running commands in parallel with tmux](01-prerequisites.md#running-commands-in-parallel-with-tmux) section in the Prerequisites lab.
-
 ## Provisioning a Kubernetes Worker Node
 
 Install the OS dependencies:
@@ -189,6 +185,8 @@ ExecStart=/usr/local/bin/kubelet \\
   --kubeconfig=/var/lib/kubelet/kubeconfig \\
   --network-plugin=cni \\
   --register-node=true \\
+  --cni-conf-dir=/etc/cni/net.d \\
+  --cni-bin-dir=/opt/cni/bin \\
   --v=2
 Restart=on-failure
 RestartSec=5

@@ -158,6 +158,7 @@ ExecStart=/usr/local/bin/kube-controller-manager \\
   --cloud-provider=openstack \\
   --cloud-config=/var/lib/kubernetes/cloud-config \\
   --root-ca-file=/var/lib/kubernetes/ca.pem \\
+  --allocate-node-cidrs=true \\
   --service-account-private-key-file=/var/lib/kubernetes/service-account-key.pem \\
   --service-cluster-ip-range=10.32.0.0/24 \\
   --use-service-account-credentials=true \\
