@@ -10,6 +10,18 @@ The commands in this lab must be run on each controller instance: `kube-controll
 ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$(openstack server show kube-controller-1 -f value -c addresses|cut -d',' -f2|tr -d ' ')
 ```
 
+Find out locally the private IP addesses and generate an etcd connection string from them:
+
+```
+for server in kube-controller-{1..3}; do echo -n "$server=https://$(openstack server show $server -f value  -c addresses|cut -d'=' -f2|cut -d',' -f1|tr -d '\n'):2380,"; done
+```
+
+This should yield a string that looks like this:
+
+```
+kube-controller-1=https://10.11.9.5:2380,kube-controller-2=https://10.11.9.11:2380,kube-controller-3=https://10.11.9.12:2380
+```
+
 ### Running commands in parallel with tmux
 
 [tmux](https://github.com/tmux/tmux/wiki) can be used to run commands on multiple compute instances at the same time. See the [Running commands in parallel with tmux](01-prerequisites.md#running-commands-in-parallel-with-tmux) section in the Prerequisites lab.
@@ -55,22 +67,11 @@ Each etcd member must have a unique name within an etcd cluster. Set the etcd na
 ETCD_NAME=$(hostname -s)
 ```
 
-Find out locally the private IP addesses and generate an etcd connection string from them:
-
 ```
-for server in kube-controller-{1..3}; do echo -n "$server=https://$(openstack server show $server -f value  -c addresses|cut -d'=' -f2|cut -d',' -f1|tr -d '\n'):2380,"; done
-```
+# Replace this with the connection stirng generated above
+CONNECTION_STRING=<<my-connection-string>>
 
-This should yield a string that looks like this:
 
-```
-kube-controller-1=https://10.11.9.5:2380,kube-controller-2=https://10.11.9.11:2380,kube-controller-3=https://10.11.9.12:2380
-```
-
-SSH back to the kube-controller-1 instance and create the `etcd.service` systemd unit file:
-
-```
-CONNECTION_STRING=kube-controller-1=https://10.11.9.5:2380,kube-controller-2=https://10.11.9.11:2380,kube-controller-3=https://10.11.9.12:2380
 cat <<EOF | sudo tee /etc/systemd/system/etcd.service
 [Unit]
 Description=etcd
