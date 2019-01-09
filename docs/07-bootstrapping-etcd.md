@@ -58,7 +58,7 @@ ETCD_NAME=$(hostname -s)
 Find out locally the private IP addesses and generate an etcd connection string from them:
 
 ```
-for server in kube-controller-{1..3}; do echo -n "$server=https://$(openstack server show kube-controller-$id -f value  -c addresses|cut -d',' -f1|sed 's/kubernetes-the-hard-way=//g'):2380,"; done
+for server in kube-controller-{1..3}; do echo -n "$server=https://$(openstack server show kube-controller-$id -f value  -c addresses|cut -d'=' -f2|cut -d',' -f1|tr -d '\n'):2380,"; done
 ```
 
 Create the `etcd.service` systemd unit file:
