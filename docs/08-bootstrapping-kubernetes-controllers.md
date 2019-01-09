@@ -10,10 +10,6 @@ The commands in this lab must be run on each controller instance: `kube-controll
 ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$(openstack server show kube-controller-1 -f value -c addresses|cut -d',' -f2|tr -d ' ')
 ```
 
-### Running commands in parallel with tmux
-
-[tmux](https://github.com/tmux/tmux/wiki) can be used to run commands on multiple compute instances at the same time. See the [Running commands in parallel with tmux](01-prerequisites.md#running-commands-in-parallel-with-tmux) section in the Prerequisites lab.
-
 ## Provision the Kubernetes Control Plane
 
 Create the Kubernetes configuration directory:
@@ -242,24 +238,7 @@ etcd-0               Healthy   {"health": "true"}
 etcd-1               Healthy   {"health": "true"}
 ```
 
-Test the nginx HTTP health check proxy:
-
-```
-curl -H "Host: kubernetes.default.svc.cluster.local" -i http://127.0.0.1/healthz
-```
-
-```
-HTTP/1.1 200 OK
-Server: nginx/1.14.0 (Ubuntu)
-Date: Sun, 30 Sep 2018 17:44:24 GMT
-Content-Type: text/plain; charset=utf-8
-Content-Length: 2
-Connection: keep-alive
-
-ok
-```
-
-> Remember to run the above commands on each controller node: `controller-0`, `controller-1`, and `controller-2`.
+> Remember to run the above commands on each controller node: `controller-1`, `controller-2`, and `controller-3`.
 
 ## RBAC for Kubelet Authorization
 
@@ -324,7 +303,7 @@ EOF
 Retrieve the `kubernetes-the-hard-way` loadbalancer IP:
 
 ```
-LOADBALANCER_IP=$(openstack floating ip list --port 6f06cb1c-b433-47de-8da4-4a60e064a923 -f value -c "Floating IP Address")
+LOADBALANCER_IP=$(openstack floating ip list --port $(neutron lbaas-loadbalancer-show kubernetes-the-hard-way -f=value -c vip_port_id) -f value -c "Floating IP Address")
 ```
 
 Make a HTTP request for the Kubernetes version info:

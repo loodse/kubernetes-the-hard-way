@@ -10,6 +10,14 @@ The commands in this lab must be run on all instances. Example:
 ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$(openstack server show kube-controller-1 -f value -c addresses|cut -d',' -f2|tr -d ' ')
 ```
 
+*Note:* It is suggested to put all steps in this section into a script and then execute it onto all nodes via:
+
+```
+for instance in kube-controller-{1..3} kube-worker-{1..3}; do \
+  ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no node.sh ubuntu@$(openstack server show $instance -f value -c addresses|cut -d',' -f2|tr -d ' ') bash  < ./node.sh;
+done
+```
+
 ### Running commands in parallel with tmux
 
 [tmux](https://github.com/tmux/tmux/wiki) can be used to run commands on multiple compute instances at the same time. See the [Running commands in parallel with tmux](01-prerequisites.md#running-commands-in-parallel-with-tmux) section in the Prerequisites lab.
@@ -151,7 +159,6 @@ authorization:
 clusterDomain: "cluster.local"
 clusterDNS:
   - "10.32.0.10"
-podCIDR: "${POD_CIDR}"
 resolvConf: "/run/systemd/resolve/resolv.conf"
 runtimeRequestTimeout: "15m"
 tlsCertFile: "/var/lib/kubelet/${HOSTNAME}.pem"
@@ -234,8 +241,8 @@ EOF
 To be able to utilize cloud provider features like load balancers or disks, kubernetes need to talk to the cloud provider API.
 For this a `cloud-config` file must be created which contains all necessary information to communicate with the OpenStack API.
 
-The file must be updated according to the OpenStack installation. 
-Potential values can be found in the openrc file, which can be downloaded from Horizon. 
+The file must be updated according to the OpenStack installation.
+Potential values can be found in the openrc file, which can be downloaded from Horizon.
 
 ```
 cat <<EOF | sudo tee /var/lib/kubernetes/cloud-config
