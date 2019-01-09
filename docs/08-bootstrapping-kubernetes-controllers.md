@@ -70,6 +70,24 @@ Create the `kube-apiserver.service` systemd unit file:
 ```
 LOADBALANCER_IP=<< LOADBALANCER_IP>>
 
+cat <<EOF | sudo tee /var/lib/kubernetes/cloud-config
+[Global]
+auth-url    = "https://example.com:8000/v3"
+username    = "openstack-username"
+password    = "openstack-password"
+tenant-name = "openstack-tenant"
+domain-name = "openstack-domain"
+region      = "region1"
+
+[LoadBalancer]
+manage-security-groups = true
+
+[BlockStorage]
+ignore-volume-az  = true
+trust-device-path = false
+bs-version        = "v2"
+EOF
+
 cat <<EOF | sudo tee /etc/systemd/system/kube-apiserver.service
 [Unit]
 Description=Kubernetes API Server
