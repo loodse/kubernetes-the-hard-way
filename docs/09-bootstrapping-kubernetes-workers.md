@@ -14,7 +14,7 @@ ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$(opensta
 
 ```
 for instance in kube-controller-{1..3} kube-worker-{1..3}; do \
-  ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no node.sh ubuntu@$(openstack server show $instance -f value -c addresses|cut -d',' -f2|tr -d ' ') bash  < ./node.sh;
+  ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ubuntu@$(openstack server show $instance -f value -c addresses|cut -d',' -f2|tr -d ' ') bash  < ./node.sh;
 done
 ```
 
