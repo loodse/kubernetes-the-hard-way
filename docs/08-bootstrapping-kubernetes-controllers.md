@@ -110,7 +110,8 @@ ExecStart=/usr/local/bin/kube-apiserver \\
   --etcd-cafile=/var/lib/kubernetes/ca.pem \\
   --etcd-certfile=/var/lib/kubernetes/kubernetes.pem \\
   --etcd-keyfile=/var/lib/kubernetes/kubernetes-key.pem \\
-  --etcd-servers=<<ETCD_CONNECTION_STRING|sed 's/2380/2379/g'>> \\
+  --etcd-servers=$(grep initial-cluster /etc/systemd/system/etcd.service|grep https|sed 's/2380/2379/g'|sed 's/--initial-cluster//g'|tr -d ' '|tr -d '\\'|tr -d '\n'
+) \\
   --cloud-provider=openstack \\
   --cloud-config=/var/lib/kubernetes/cloud-config \\
   --event-ttl=1h \\
