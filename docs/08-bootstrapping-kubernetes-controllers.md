@@ -62,12 +62,14 @@ INTERNAL_IP=$(curl http://169.254.169.254/1.0/meta-data/local-ipv4)
 
 Locally find out the loadbalancer IP:
 ```
-LOADBALANCER_IP=$(openstack floating ip list --port 6f06cb1c-b433-47de-8da4-4a60e064a923 -f value -c "Floating IP Address")
+openstack floating ip list --port $(neutron lbaas-loadbalancer-show kubernetes-the-hard-way -f=value -c vip_port_id) -f value -c "Floating IP Address"
 ```
 
 Create the `kube-apiserver.service` systemd unit file:
 
 ```
+LOADBALANCER_IP=<< LOADBALANCER_IP>>
+
 cat <<EOF | sudo tee /etc/systemd/system/kube-apiserver.service
 [Unit]
 Description=Kubernetes API Server
