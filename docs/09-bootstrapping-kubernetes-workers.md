@@ -276,8 +276,6 @@ EOF
 
 ## Verification
 
-> The compute instances created in this tutorial will not have permission to complete this section. Run the following commands from the same machine used to create the compute instances.
-
 List the registered Kubernetes nodes:
 
 ```
@@ -289,12 +287,12 @@ kubectl get nodes --kubeconfig admin.kubeconfig
 
 ```
 NAME                STATUS   ROLES    AGE   VERSION
-kube-controller-1   Ready    <none>   35s   v1.12.0
-kube-controller-2   Ready    <none>   36s   v1.12.0
-kube-controller-3   Ready    <none>   36s   v1.12.0
-kube-worker-1       Ready    <none>   36s   v1.12.0
-kube-worker-2       Ready    <none>   36s   v1.12.0
-kube-worker-3       Ready    <none>   36s   v1.12.0
+kube-controller-1   NotReady    <none>   35s   v1.12.0
+kube-controller-2   NotReady    <none>   36s   v1.12.0
+kube-controller-3   NotReady    <none>   36s   v1.12.0
+kube-worker-1       NotReady    <none>   36s   v1.12.0
+kube-worker-2       NotReady    <none>   36s   v1.12.0
+kube-worker-3       NotReady    <none>   36s   v1.12.0
 ```
 
 Next: [Configuring kubectl for Remote Access](10-configuring-kubectl.md)
